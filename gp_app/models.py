@@ -12,6 +12,7 @@ class User(db.Model, UserMixin):
 	username = db.Column(db.String(20), unique=True, nullable=False)
 	email = db.Column(db.String(120), unique=True, nullable=False)
 	password = db.Column(db.String(60), nullable=False)
+	user_types = db.relationship('UserType', backref='user', lazy=True)
 
 	def get_reset_token(self, expires_sec=1800):
 		s = Serializer(current_app.config['SECRET_KEY'], expires_sec)
@@ -28,4 +29,12 @@ class User(db.Model, UserMixin):
 
 	def __repr__(self):
 		return f"User('{self.username}', '{self.email}')"
+
+class UserType(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	name = db.Column(db.String(20), nullable=False)
+	user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+	
+	def __repr__(self):
+		return f"UserType('{self.name}', {self.user_id}')"
 
