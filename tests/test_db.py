@@ -17,13 +17,4 @@ def test_model_user_repr(app):
 		user = User.query.first()
 		assert str(user) == "User('test', 'test@mycompany.com')"
 
-def test_user_reset_token(app):
-	with app.app_context():
-		user = User.query.first()
-		token = user.get_reset_token()
-		token2 = token + 'abc'
-		user = User.verify_reset_token(token)
-		assert user.id == 1
-		user = User.verify_reset_token(token2)
-		assert user is None
 
