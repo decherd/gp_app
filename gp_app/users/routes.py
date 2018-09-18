@@ -1,13 +1,23 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint, abort
 from flask_login import login_user, current_user, logout_user, login_required
 from .. import db, bcrypt
-from ..models import User
+from ..models import User, UserType
 from .forms import (RegistrationForm, LoginForm, UpdateAccountForm,
-                                   RequestResetForm, ResetPasswordForm)
+                                   RequestResetForm, ResetPasswordForm, UserTypeForm)
 from .utils import send_reset_email
 
 users = Blueprint('users', __name__)
 
+
+# def login_required(view):
+#     @functools.wraps(view)
+#     def wrapped_view(**kwargs):
+#         if g.user is None:
+#             return redirect(url_for('auth.login'))
+
+#         return view(**kwargs)
+
+#     return wrapped_view
 
 @users.route("/register", methods=['GET', 'POST'])
 def register():
@@ -91,3 +101,47 @@ def reset_token(token):
 		flash('Your password has been updated! You are now able to log in.', 'success')
 		return redirect(url_for('users.login'))
 	return render_template('reset_token.html', title='Reset Password', form=form)
+
+@users.route("/user_types")
+def user_types():
+	user_types = UserType.query.all()
+	return render_template('user_types.html', title='User Types', user_types=user_types)
+
+
+@users.route("/user_type/new", methods=['GET', 'POST'])
+@login_required
+def new_user_type():
+	form = UserTypeForm()
+	if form.validate_on_submit():
+		flash('A new user type has been added!', 'success')
+		user_type = UserType(name=form.name.data)
+		db.session.add(user_type)
+		db.session.commit()
+		return redirect(url_for('users.user_types'))
+	return render_template('add_user_type.html', title='New User Type', legend="New User Type", form=form)
+
+
+@users.route("/user_type/<int:user_type_id>/delete", methods=['POST'])
+@login_required
+def delete_user_type(user_type_id):
+	user_type = UserType.query.get_or_404(user_type_id)
+	db.session.delete(user_type)
+	db.session.commit()
+	flash('The user type has been deleted!', 'success')
+	return redirect(url_for('users.user_types'))
+
+
+@users.route("/user_type/<int:user_type_id>/update", methods=['GET', 'POST'])
+@login_required
+def update_user_type(user_type_id):
+	user_type = UserType.query.get_or_404(user_type_id)
+	form = UserTypeForm()
+	if form.validate_on_submit():
+		user_type.name = form.name.data
+		db.session.commit()
+		flash('Your user type has been updated!', 'success')
+		return redirect(url_for('users.user_types'))
+	elif request.method == "GET":
+		form.name.data = user_type.name
+	return render_template('add_user_type.html', title='Update User Type', form=form, 
+							legend="Update User Type")

@@ -8,8 +8,8 @@ def load_user(user_id):
 	return User.query.get(int(user_id))
 
 user_types = db.Table('user_types',
-    db.Column('user_type_id', db.Integer, db.ForeignKey('user_type.id'), primary_key=True),
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    db.Column('user_type_id', db.Integer, db.ForeignKey('user_type.id')),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
 )
 
 class User(db.Model, UserMixin):
