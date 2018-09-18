@@ -1,3 +1,4 @@
+import functools
 from flask import render_template, url_for, flash, redirect, request, Blueprint, abort
 from flask_login import login_user, current_user, logout_user, login_required
 from .. import db, bcrypt
@@ -9,15 +10,16 @@ from .utils import send_reset_email
 users = Blueprint('users', __name__)
 
 
-# def login_required(view):
-#     @functools.wraps(view)
-#     def wrapped_view(**kwargs):
-#         if g.user is None:
-#             return redirect(url_for('auth.login'))
+def superuser_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        for user_type in current_user.user_types:
+        	if 'SuperUser' in user_type.name:
+        		return view(**kwargs)
+            	
+        abort(403)
 
-#         return view(**kwargs)
-
-#     return wrapped_view
+    return wrapped_view
 
 @users.route("/register", methods=['GET', 'POST'])
 def register():
@@ -103,6 +105,8 @@ def reset_token(token):
 	return render_template('reset_token.html', title='Reset Password', form=form)
 
 @users.route("/user_types")
+@login_required
+@superuser_required
 def user_types():
 	user_types = UserType.query.all()
 	return render_template('user_types.html', title='User Types', user_types=user_types)
@@ -110,6 +114,7 @@ def user_types():
 
 @users.route("/user_type/new", methods=['GET', 'POST'])
 @login_required
+@superuser_required
 def new_user_type():
 	form = UserTypeForm()
 	if form.validate_on_submit():
@@ -123,6 +128,7 @@ def new_user_type():
 
 @users.route("/user_type/<int:user_type_id>/delete", methods=['POST'])
 @login_required
+@superuser_required
 def delete_user_type(user_type_id):
 	user_type = UserType.query.get_or_404(user_type_id)
 	db.session.delete(user_type)
@@ -133,6 +139,7 @@ def delete_user_type(user_type_id):
 
 @users.route("/user_type/<int:user_type_id>/update", methods=['GET', 'POST'])
 @login_required
+@superuser_required
 def update_user_type(user_type_id):
 	user_type = UserType.query.get_or_404(user_type_id)
 	form = UserTypeForm()
