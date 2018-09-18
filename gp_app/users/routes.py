@@ -11,15 +11,14 @@ users = Blueprint('users', __name__)
 
 
 def superuser_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        for user_type in current_user.user_types:
-        	if 'SuperUser' in user_type.name:
-        		return view(**kwargs)
-            	
-        abort(403)
+	@functools.wraps(view)
+	def wrapped_view(**kwargs):
+		if current_user.is_superuser():
+			return view(**kwargs)
 
-    return wrapped_view
+		abort(403)
+
+	return wrapped_view
 
 @users.route("/register", methods=['GET', 'POST'])
 def register():

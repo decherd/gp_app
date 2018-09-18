@@ -33,6 +33,12 @@ class User(db.Model, UserMixin):
 			return None
 		return User.query.get(user_id)
 
+	def is_superuser(self):
+		for user_type in self.user_types:
+			if 'SuperUser' in user_type.name:
+				return True
+
+
 	def __repr__(self):
 		return f"User('{self.username}', '{self.email}')"
 
