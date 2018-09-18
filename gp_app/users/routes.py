@@ -151,3 +151,20 @@ def update_user_type(user_type_id):
 		form.name.data = user_type.name
 	return render_template('add_user_type.html', title='Update User Type', form=form, 
 							legend="Update User Type")
+
+@users.route("/users")
+@login_required
+@superuser_required
+def all_users():
+	all_users = User.query.all()
+	return render_template('users.html', title='All Users', users=all_users)
+
+@users.route("/user/<int:user_id>/delete", methods=['POST'])
+@login_required
+@superuser_required
+def delete_user(user_id):
+	user = User.query.get_or_404(user_id)
+	db.session.delete(user)
+	db.session.commit()
+	flash('The user type has been deleted!', 'success')
+	return redirect(url_for('users.all_users'))

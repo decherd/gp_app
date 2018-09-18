@@ -3,7 +3,7 @@ import tempfile
 
 import pytest
 from gp_app import create_app, db
-from gp_app.models import User
+from gp_app.models import User, UserType
 
 
 @pytest.fixture
@@ -22,12 +22,15 @@ def app():
                     email='test@mycompany.com',
                     password='$2b$12$XuPwoWD7h2SdH4O1QDEy6eM7VWm.N/TbKfo5AVTqS.PW4xpkkpKie'
                     )
-        user2 = User(username='test2',
-                    email='test2@mycompany.com',
+        user2 = User(username='a12345',
+                    email='a12345@mycompany.com',
                     password='$2b$12$XuPwoWD7h2SdH4O1QDEy6eM7VWm.N/TbKfo5AVTqS.PW4xpkkpKie'
                     )
-        db.session.add(user)
-        db.session.add(user2)
+        user_type1 = UserType(name='SuperUser')
+        user_type2 = UserType(name='Junk')
+        user.user_types.append(user_type1)
+        user2.user_types.append(user_type2)
+        db.session.add_all([user, user2])
         db.session.commit()
 
     yield app

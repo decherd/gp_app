@@ -1,6 +1,6 @@
 import sqlite3
 import pytest
-from gp_app.models import User
+from gp_app.models import User, UserType
 
 # def test_get_close_db(app):
 #     with app.app_context():
@@ -17,4 +17,7 @@ def test_model_user_repr(app):
 		user = User.query.first()
 		assert str(user) == "User('test', 'test@mycompany.com')"
 
-
+def test_model_user_type_repr(app):
+	with app.app_context():
+		user_type = UserType.query.first()
+		assert str(user_type) == "UserType('SuperUser')"
