@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+{% block content %}
+	<h1>All Users</h1>
+	<table class="table">
+		<thead>
+			<tr>
+				<th scope="col">Username</th>
+				<th scope="col">User Types</th>
+				<th scope="col"></th>
+				<th scope="col"></th>
+			</tr>
+		</thead>
+	  <tbody>
+	{% for form in user_forms %}
+		<tr>
+	      <th class="th fit pt-3" scope="row">{{ form.user.username }}</th>
+	      <td class="td td-md">
+	      	<form action="{{ url_for('users.update_users', user_id=form.user.id) }}" method="post">
+
+                    {{ form.hidden_tag() }}
+
+                    <div class="form-group">
+                        {{ form.user_types(class_="form-control") }}
+
+                        {% for error in form.user_types.errors %}
+                        <span class="label label-danger">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+ 		  </td>
+ 		  <td class="td fit">
+                    {{ form.submit(class_="btn btn-primary btn-sm") }}
+            </form>
+          </td>
+	      <td><button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" data-action="{{url_for('users.delete_user', user_id=form.user.id)}}" data-delete_header='Delete User: {{form.user.username}}'>Delete User</button>
+	    </tr>
+	{% endfor %}
+	 </tbody>
+	</table>
+	<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  		<div class="modal-dialog" role="document">
+	  	 <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="deleteModalLabel">New message</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+	        <form class="modal-form-action" action="from custom.js" method="POST">
+		        	<input class="btn btn-danger" type="submit" value="Delete">
+		    </form>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+{% endblock content %}
