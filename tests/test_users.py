@@ -209,10 +209,20 @@ def test_new_update_delete_user_type(auth, client):
 def test_delete_user(client, auth):
     auth.login()
     response = client.get('/users', follow_redirects=True)
-    assert b'a12345' in response.data
+    assert b'a12345' and b'selected value="Junk"' in response.data
     response = client.post('/user/2/delete')
     assert 'http://localhost/users' == response.headers['Location']
     response = client.get('/users', follow_redirects=True)
-    assert b'a12345' not in response.data
+    assert b'a12345' and b'selected value="Junk"' not in response.data
 
+def test_update_users(client, auth):
+    auth.login()
+    response = client.post('/users/2/update', data={'user_types': 'SuperUser'}, 
+        follow_redirects=True)
+    assert b'a12345' and  not b'selected value="Junk"' in response.data
+
+    response = client.post('/user_type/1/delete')
+    response = client.post('/user_type/2/delete')
+    response = client.get('/users', follow_redirects=True)
+    assert b'a12345' and not b'Junk' in response.data
 

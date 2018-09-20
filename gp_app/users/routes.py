@@ -4,7 +4,8 @@ from flask_login import login_user, current_user, logout_user, login_required
 from .. import db, bcrypt
 from ..models import User, UserType
 from .forms import (RegistrationForm, LoginForm, UpdateAccountForm,
-                                   RequestResetForm, ResetPasswordForm, UserTypeForm)
+                                   RequestResetForm, ResetPasswordForm, UserTypeForm,
+                                   AssignUserType)
 from .utils import send_reset_email
 
 users = Blueprint('users', __name__)
@@ -152,12 +153,48 @@ def update_user_type(user_type_id):
 	return render_template('add_user_type.html', title='Update User Type', form=form, 
 							legend="Update User Type")
 
-@users.route("/users")
+
+
+@users.route("/users", methods=['GET'])
 @login_required
 @superuser_required
 def all_users():
+	user_types = UserType.query.all()
+	user_types = [(user_type.name, user_type.name) for user_type in user_types]
+
 	all_users = User.query.all()
-	return render_template('users.html', title='All Users', users=all_users)
+	user_forms = []
+	form = AssignUserType()
+
+	for user in all_users:
+		form = AssignUserType()
+
+		uts = user.user_types
+		uts = [user_type.name for user_type in uts]
+
+		form.user_types.data = uts
+		form.user_types.choices = user_types
+		form.user = user
+		user_forms.append(form)
+
+	return render_template('users.html', title='All Users', user_forms=user_forms)
+
+
+@users.route("/users/<int:user_id>/update", methods=['POST'])
+@login_required
+@superuser_required
+def update_users(user_id):
+	form = AssignUserType()
+	if form.validate_on_submit():
+		user = User.query.filter_by(id=user_id).first()
+		user.user_types.clear()
+		for user_type in form.user_types.data.split(','):
+			ut = UserType.query.filter_by(name=user_type).first()
+			user.user_types.append(ut)
+
+		db.session.commit()
+		flash(f"{user.username}'s user types have been updated!", 'success')
+	return redirect(url_for('users.all_users'))
 
 @users.route("/user/<int:user_id>/delete", methods=['POST'])
 @login_required
